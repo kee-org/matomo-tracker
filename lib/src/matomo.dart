@@ -176,22 +176,22 @@ class MatomoTracker {
         final iosInfo = await deviceInfo.iosInfo;
         final systemName = iosInfo.systemName;
         final version = iosInfo.systemVersion;
-        final name = iosInfo.name;
         final model = iosInfo.model;
 
-        return '$systemName $version, $name $model';
+        return '$systemName $version, $model';
       } else if (_platformInfo.isWindows) {
         final windowsInfo = await deviceInfo.windowsInfo;
+        final releaseId = windowsInfo.releaseId;
+        final buildNumber = windowsInfo.buildNumber;
 
-        return 'Windows ${windowsInfo.computerName}';
+        return 'Windows $releaseId.$buildNumber';
       } else if (_platformInfo.isMacOS) {
         final macInfo = await deviceInfo.macOsInfo;
-        final computerName = macInfo.computerName;
         final model = macInfo.model;
         final version = macInfo.kernelVersion;
         final release = macInfo.osRelease;
 
-        return '$computerName, $model, $version, $release';
+        return '$model, $version, $release';
       } else if (_platformInfo.isLinux) {
         final linuxInfo = await deviceInfo.linuxInfo;
 
@@ -234,21 +234,20 @@ class MatomoTracker {
 
   // Pause tracker
   void pause() {
-    if(initialized){
+    if (initialized) {
       _timer.cancel();
       _dequeue();
     }
   }
 
   // Resume tracker
-  void resume(){
+  void resume() {
     if (initialized && !_timer.isActive) {
       _timer = Timer.periodic(Duration(seconds: _dequeueInterval), (timer) {
         _dequeue();
       });
     }
   }
-
 
   /// Iterate on the events in the queue and send them to Matomo.
   void dispatchEvents() {
@@ -451,7 +450,7 @@ class MatomoTracker {
   void _dequeue() {
     assert(initialized);
     log.finest('Processing queue ${_queue.length}');
-    if(!_lock.locked){
+    if (!_lock.locked) {
       _lock.synchronized(() {
         while (_queue.isNotEmpty) {
           final event = _queue.removeFirst();
